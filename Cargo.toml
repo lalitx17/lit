@@ -1,5 +1,5 @@
 [package]
-name = "lit-git"
+name = "lit"
 version = "0.1.0"
 edition = "2024"
 
