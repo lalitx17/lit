@@ -12,7 +12,7 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     Init,
-    Add,
+    Add { file_path: String },
     Commit,
     Log,
 }
@@ -21,9 +21,9 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.cmd {
-        Commands::Init => commands::init(),
-        Commands::Add => commands::add(),
-        Commands::Commit => commands::commit(),
-        Commands::Log => commands::log(),
+        Commands::Init => commands::init().unwrap(),
+        Commands::Add { file_path } => commands::add(&file_path).unwrap(),
+        Commands::Commit => commands::commit().unwrap(),
+        Commands::Log => commands::log().unwrap(),
     }
 }
