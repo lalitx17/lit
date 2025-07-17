@@ -1,4 +1,5 @@
 mod commands;
+mod utils;
 
 use clap::{Parser, Subcommand};
 
@@ -15,6 +16,7 @@ enum Commands {
     Add { file_path: String },
     Commit,
     Log,
+    Show { hash: String },
 }
 
 fn main() {
@@ -25,5 +27,6 @@ fn main() {
         Commands::Add { file_path } => commands::add(&file_path).unwrap(),
         Commands::Commit => commands::commit().unwrap(),
         Commands::Log => commands::log().unwrap(),
+        Commands::Show { hash } => println!("{}", commands::show(&hash).unwrap()),
     }
 }

@@ -1,3 +1,4 @@
+use crate::utils::read_index;
 use flate2::{Compression, write::ZlibEncoder};
 use sha1::{Digest, Sha1};
 use std::collections::HashMap;
@@ -56,21 +57,6 @@ pub fn get_all_files_recursively(dir_path: &String) -> Vec<String> {
         })
         .filter(|path| !is_ignored(&path, &ignore_files))
         .collect()
-}
-
-fn read_index() -> HashMap<String, String> {
-    let mut file_hash: HashMap<String, String> = HashMap::new();
-    if let Ok(file) = File::open(".lit/index") {
-        let reader = BufReader::new(file);
-        for line in reader.lines().flatten() {
-            let mut parts = line.split_whitespace();
-            if let (Some(hash), Some(file_path)) = (parts.next(), parts.next()) {
-                file_hash.insert(file_path.to_string(), hash.to_string());
-            }
-        }
-    }
-
-    return file_hash;
 }
 
 fn create_blob_object(file_path: &str) -> Result<(Vec<u8>, String)> {
