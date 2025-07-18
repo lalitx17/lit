@@ -29,14 +29,3 @@ pub fn last_commit_hash() -> Result<String> {
         Ok(head_content.trim().to_string())
     }
 }
-
-pub fn is_lit_initialized() -> Result<()> {
-    if !std::path::Path::new(".lit").exists() {
-        Err(std::io::Error::new(
-            std::io::ErrorKind::NotFound,
-            "lit is not initialized",
-        ))
-    } else {
-        Ok(())
-    }
-}

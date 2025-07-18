@@ -1,5 +1,5 @@
 use crate::utils::last_commit_hash;
-use crate::utils::{is_lit_initialized, read_index};
+use crate::utils::read_index;
 use flate2::{Compression, write::ZlibEncoder};
 use sha1::{Digest, Sha1};
 use std::collections::BTreeMap;
@@ -9,7 +9,6 @@ use std::fs::File;
 use std::io::Result;
 use std::io::Write;
 pub fn commit(message: &String) -> Result<()> {
-    is_lit_initialized()?;
     let file_map = read_index();
 
     let last_commit_hash = last_commit_hash()?;

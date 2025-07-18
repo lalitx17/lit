@@ -1,4 +1,4 @@
-use crate::utils::{is_lit_initialized, read_index};
+use crate::utils::read_index;
 use flate2::{Compression, write::ZlibEncoder};
 use sha1::{Digest, Sha1};
 use std::collections::HashMap;
@@ -9,7 +9,6 @@ use std::path::Path;
 use walkdir::WalkDir;
 
 pub fn add(dir_path: &String) -> Result<()> {
-    is_lit_initialized()?;
     let files = get_all_files_recursively(&dir_path);
 
     let mut file_map: HashMap<String, String> = read_index();
