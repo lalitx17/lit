@@ -72,8 +72,9 @@ pub fn build_tree(entries: &HashMap<String, String>, prefix: &str) -> Result<Str
                 let object_type = "blob";
                 let name = parts[0];
                 let mut entry = Vec::new();
-                entry.extend_from_slice(format!("{} {}\0", object_type, name).as_bytes());
+                entry.extend_from_slice(format!("{} {} \0", object_type, name).as_bytes());
                 entry.extend_from_slice(hash.as_bytes());
+                entry.extend_from_slice(b"\n");
                 tree_entries.push(entry);
             } else {
                 let dir = parts[0];
@@ -89,8 +90,9 @@ pub fn build_tree(entries: &HashMap<String, String>, prefix: &str) -> Result<Str
         let subtree_hash = build_tree(&submap, &format!("{}/", dir))?;
         let object_type = "tree";
         let mut entry = Vec::new();
-        entry.extend_from_slice(format!("{} {}\0", object_type, dir).as_bytes());
+        entry.extend_from_slice(format!("{} {} \0", object_type, dir).as_bytes());
         entry.extend_from_slice(subtree_hash.as_bytes());
+        entry.extend_from_slice(b"\n");
         tree_entries.push(entry);
     }
 
