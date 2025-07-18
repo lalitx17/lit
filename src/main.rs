@@ -24,6 +24,12 @@ enum Commands {
     Show {
         hash: String,
     },
+    Checkout {
+        hash: Option<String>,
+        branch: Option<String>,
+        #[clap(short, long)]
+        new_branch: bool,
+    },
 }
 
 fn main() {
@@ -33,7 +39,12 @@ fn main() {
         Commands::Init => commands::init().unwrap(),
         Commands::Add { file_path } => commands::add(&file_path).unwrap(),
         Commands::Commit { message } => commands::commit(&message).unwrap(),
-        Commands::Log => commands::log().unwrap(),
+        Commands::Log => println!("{}", commands::log().unwrap()),
         Commands::Show { hash } => println!("{}", commands::show(&hash).unwrap()),
+        Commands::Checkout {
+            hash,
+            branch,
+            new_branch,
+        } => commands::checkout(hash, branch, new_branch).unwrap(),
     }
 }

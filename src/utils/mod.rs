@@ -1,3 +1,4 @@
-pub mod index_operation;
+pub mod common;
 
-pub use index_operation::read_index;
+pub use common::last_commit_hash;
+pub use common::read_index;

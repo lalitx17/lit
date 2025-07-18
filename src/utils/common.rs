@@ -1,5 +1,7 @@
 use std::collections::HashMap;
+use std::fs;
 use std::fs::File;
+use std::io::Result;
 use std::io::{BufRead, BufReader};
 
 pub fn read_index() -> HashMap<String, String> {
@@ -15,4 +17,15 @@ pub fn read_index() -> HashMap<String, String> {
     }
 
     return file_hash;
+}
+
+pub fn last_commit_hash() -> Result<String> {
+    let head_content = fs::read_to_string(".lit/HEAD")?;
+    if let Some(ref_path) = head_content.strip_prefix("ref: ").map(str::trim) {
+        let ref_file = format!(".lit/{}", ref_path);
+        let hash = fs::read_to_string(ref_file)?;
+        Ok(hash.trim().to_string())
+    } else {
+        Ok(head_content.trim().to_string())
+    }
 }
