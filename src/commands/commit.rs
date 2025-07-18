@@ -4,20 +4,33 @@ use sha1::{Digest, Sha1};
 use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::fs;
+use std::fs::File;
 use std::io::Result;
 use std::io::Write;
 
 pub fn commit(message: &String) -> Result<()> {
     let file_map = read_index();
 
+    let last_commit_hash = last_commit_hash()?;
+
     let root_hash = build_tree(&file_map, "")?;
 
-    println!("root_hash: {}", root_hash);
+    let commit_hash = build_commit(root_hash, last_commit_hash, &message)?;
+    write_commit_to_ref(&commit_hash)?;
+    println!("commit hash {}\n", commit_hash);
 
-    for (key, value) in &file_map {
-        println!("{}: {}", key, value);
+    Ok(())
+}
+
+fn write_commit_to_ref(commit_hash: &String) -> Result<()> {
+    let head_content = fs::read_to_string(".lit/HEAD")?;
+
+    if let Some(ref_path) = head_content.strip_prefix("ref: ").map(str::trim) {
+        let ref_file = format!(".lit/{}", ref_path);
+
+        let mut file = File::create(ref_file)?;
+        file.write_all(commit_hash.as_bytes())?;
     }
-
     Ok(())
 }
 
@@ -99,7 +112,20 @@ pub fn build_tree(entries: &HashMap<String, String>, prefix: &str) -> Result<Str
     write_object("tree", &tree_content)
 }
 
-/* fn build_commit(tree_hash: &String) -> Result<String> {
+fn build_commit(tree_hash: String, last_commit_hash: String, message: &String) -> Result<String> {
+    let author = "Kino <kino@gmail.com>";
+    let timestamp = chrono::Utc::now();
+    let timezone = "+0000";
 
+    let mut commit_content = format!("tree {}\n", tree_hash);
+    if !last_commit_hash.is_empty() {
+        commit_content += &format!("parent {}\n", last_commit_hash);
+    }
+
+    commit_content += &format!(
+        "author {} {} {}\ncomitter {} {} {}\n\n{}\n",
+        author, timestamp, timezone, author, timestamp, timezone, message
+    );
+
+    write_object("commit", commit_content.as_bytes())
 }
- */
