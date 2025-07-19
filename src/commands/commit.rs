@@ -88,7 +88,12 @@ pub fn build_tree(entries: &HashMap<String, String>, prefix: &str) -> Result<Str
     }
 
     for (dir, submap) in subdirs {
-        let subtree_hash = build_tree(&submap, &format!("{}/", dir))?;
+        let new_prefix = if prefix.is_empty() {
+            format!("{}", dir)
+        } else {
+            format!("{}/{}", prefix.trim_end_matches('/'), dir)
+        };
+        let subtree_hash = build_tree(&submap, &format!("{}/", new_prefix))?;
         let object_type = "tree";
         let mut entry = Vec::new();
         entry.extend_from_slice(format!("{} {} \0", object_type, dir).as_bytes());
