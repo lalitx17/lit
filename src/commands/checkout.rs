@@ -45,6 +45,8 @@ pub fn switch_commit(hash: String) -> Result<()> {
     };
     clean_working_dir(Path::new("."))?;
     restore_tree(tree_hash, "")?;
+    write_hash_to_current_branch(&hash)?;
+
     Ok(())
 }
 
@@ -108,5 +110,14 @@ fn clean_working_dir(root: &Path) -> Result<()> {
         }
     }
 
+    Ok(())
+}
+
+fn write_hash_to_current_branch(hash: &str) -> Result<()> {
+    let head_content = std::fs::read_to_string(".lit/HEAD")?;
+    let branch_ref = head_content.trim().strip_prefix("ref: ").unwrap();
+
+    let location = format!(".lit/{}", branch_ref);
+    std::fs::write(location, hash)?;
     Ok(())
 }
