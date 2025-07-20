@@ -5,7 +5,7 @@ use std::fs::File;
 use std::io::{Result, Write};
 use std::path::Path;
 
-pub fn checkout(hash: Option<String>, branch: Option<String>, new_branch: bool) -> Result<()> {
+pub fn checkout(new_branch: bool, branch: Option<String>, hash: Option<String>) -> Result<()> {
     is_lit_initialized()?;
     if new_branch == true && hash.is_some() {
     } else if new_branch == true {

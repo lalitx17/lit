@@ -25,11 +25,12 @@ enum Commands {
         hash: String,
     },
     Checkout {
-        hash: Option<String>,
-        branch: Option<String>,
         #[clap(short, long)]
         new_branch: bool,
+        branch: Option<String>,
+        hash: Option<String>,
     },
+    Branch,
 }
 
 fn main() {
@@ -45,6 +46,7 @@ fn main() {
             hash,
             branch,
             new_branch,
-        } => commands::checkout(hash, branch, new_branch).unwrap(),
+        } => commands::checkout(new_branch, branch, hash).unwrap(),
+        Commands::Branch => commands::branch_list().unwrap(),
     }
 }
