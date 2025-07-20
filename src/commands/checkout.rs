@@ -1,5 +1,5 @@
-use crate::commands::show;
-use crate::utils::{is_lit_initialized, last_commit_hash};
+use crate::commands::show::{ShowResult, show};
+use crate::utils::{does_branch_exists, is_lit_initialized, last_commit_hash};
 use std::fs;
 use std::fs::File;
 use std::io::{Result, Write};
@@ -8,6 +8,12 @@ use std::path::Path;
 pub fn checkout(new_branch: bool, branch: Option<String>, hash: Option<String>) -> Result<()> {
     is_lit_initialized()?;
     if new_branch == true && hash.is_some() {
+        if let Some(commit_hash) = hash {
+            switch_commit(commit_hash)?;
+        }
+        if let Some(branch_name) = branch {
+            create_and_switch_branch(branch_name)?;
+        }
     } else if new_branch == true {
         if let Some(branch_name) = branch {
             create_and_switch_branch(branch_name)?;
@@ -16,12 +22,21 @@ pub fn checkout(new_branch: bool, branch: Option<String>, hash: Option<String>) 
         if let Some(commit_hash) = hash {
             switch_commit(commit_hash)?;
         }
+    } else if branch.is_some() {
+        if let Some(branch_name) = branch {
+            switch_branch(branch_name)?;
+        }
     } else {
+        println!("Missing Arguments!!!")
     }
     Ok(())
 }
 
 pub fn create_and_switch_branch(branch: String) -> Result<()> {
+    let branch_exists = does_branch_exists(&branch)?;
+    if branch_exists {
+        println!("{} branch already exists.", branch);
+    }
     let last_commit_hash = last_commit_hash()?;
 
     let head_content = format!("ref: refs/heads/{}", branch);
@@ -36,22 +51,34 @@ pub fn create_and_switch_branch(branch: String) -> Result<()> {
 }
 
 pub fn switch_commit(hash: String) -> Result<()> {
-    let content = show(&hash)?;
-
-    let tree_line = content.lines().find(|l| l.starts_with("tree "));
-    let tree_hash = match tree_line {
-        Some(line) => line[5..].trim(),
-        None => return Ok(()),
-    };
-    clean_working_dir(Path::new("."))?;
-    restore_tree(tree_hash, "")?;
-    write_hash_to_current_branch(&hash)?;
-
+    match show(&hash)? {
+        ShowResult::NotFound => {
+            println!("hash doesn't exist");
+            return Ok(());
+        }
+        ShowResult::Exists(content) => {
+            println!("hash exists");
+            let tree_line = content.lines().find(|l| l.starts_with("tree "));
+            let tree_hash = match tree_line {
+                Some(line) => line[5..].trim(),
+                None => return Ok(()),
+            };
+            clean_working_dir(Path::new("."))?;
+            restore_tree(tree_hash, "")?;
+            write_hash_to_current_branch(&hash)?;
+        }
+    }
     Ok(())
 }
 
 pub fn restore_tree(tree_hash: &str, path_prefix: &str) -> Result<()> {
-    let tree_data = show(&tree_hash.to_string())?;
+    let tree_data = match show(&tree_hash.to_string())? {
+        ShowResult::NotFound => {
+            println!("tree hash doesn't exist: {}", tree_hash);
+            return Ok(());
+        }
+        ShowResult::Exists(data) => data,
+    };
 
     let mut i = 0;
     let tree_bytes = tree_data.as_bytes();
@@ -76,7 +103,13 @@ pub fn restore_tree(tree_hash: &str, path_prefix: &str) -> Result<()> {
         let file_path = format!("{}{}", path_prefix, name);
 
         if object_type == "blob" {
-            let blob_content = show(&hash.to_string())?;
+            let blob_content = match show(&hash.to_string())? {
+                ShowResult::NotFound => {
+                    println!("blob hash doesn't exist: {}", hash);
+                    continue;
+                }
+                ShowResult::Exists(data) => data,
+            };
             if let Some(parent) = Path::new(&file_path).parent() {
                 fs::create_dir_all(parent)?;
             }
@@ -119,5 +152,17 @@ fn write_hash_to_current_branch(hash: &str) -> Result<()> {
 
     let location = format!(".lit/{}", branch_ref);
     std::fs::write(location, hash)?;
+    Ok(())
+}
+
+fn switch_branch(branch: String) -> Result<()> {
+    let branch_exists = does_branch_exists(&branch)?;
+    if !branch_exists {
+        println!("The given branch doesn't exists");
+    } else {
+        let branch = format!("ref: refs/heads/{}", branch);
+        let location = format!(".lit/HEAD");
+        fs::write(location, branch)?;
+    }
     Ok(())
 }

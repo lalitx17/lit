@@ -41,7 +41,10 @@ fn main() {
         Commands::Add { file_path } => commands::add(&file_path).unwrap(),
         Commands::Commit { message } => commands::commit(&message).unwrap(),
         Commands::Log => println!("{}", commands::log().unwrap()),
-        Commands::Show { hash } => println!("{}", commands::show(&hash).unwrap()),
+        Commands::Show { hash } => match commands::show(&hash).unwrap() {
+            commands::show::ShowResult::Exists(content) => println!("{}", content),
+            commands::show::ShowResult::NotFound => println!("Object not found"),
+        },
         Commands::Checkout {
             hash,
             branch,

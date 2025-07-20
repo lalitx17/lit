@@ -40,3 +40,18 @@ pub fn is_lit_initialized() -> Result<()> {
         Ok(())
     }
 }
+
+pub fn does_branch_exists(branch: &String) -> Result<bool> {
+    let branch_dir = ".lit/refs/heads";
+    let entries = fs::read_dir(branch_dir)?;
+    for entry in entries {
+        let entry = entry?;
+        let file_name = entry.file_name();
+        if let Some(name) = file_name.to_str() {
+            if name == branch {
+                return Ok(true);
+            }
+        }
+    }
+    Ok(false)
+}
