@@ -5,23 +5,12 @@ use std::fs::File;
 use std::io::{Result, Write};
 use std::path::Path;
 
-pub fn checkout(hash: Option<String>, new_branch: bool, branch: Option<String>) -> Result<()> {
+pub fn checkout(new_branch: bool, arg: String) -> Result<()> {
     is_lit_initialized()?;
-    if new_branch == true && hash.is_some() {
-        if let Some(commit_hash) = hash {
-            switch_commit(commit_hash)?;
-        }
-        if let Some(branch_name) = branch {
-            create_and_switch_branch(branch_name)?;
-        }
-    } else if new_branch == true {
-        if let Some(branch_name) = branch {
-            create_and_switch_branch(branch_name)?;
-        }
-    } else if hash.is_some() {
-        if let Some(commit_hash) = hash {
-            switch_commit(commit_hash)?;
-        }
+    if new_branch == true {
+        create_and_switch_branch(arg)?;
+    } else if new_branch == false {
+        switch_commit(arg)?;
     } else {
         println!("Missing Arguments!!!")
     }
