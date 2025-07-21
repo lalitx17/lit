@@ -5,7 +5,7 @@ use std::fs::File;
 use std::io::{Result, Write};
 use std::path::Path;
 
-pub fn checkout(new_branch: bool, branch: Option<String>, hash: Option<String>) -> Result<()> {
+pub fn checkout(hash: Option<String>, new_branch: bool, branch: Option<String>) -> Result<()> {
     is_lit_initialized()?;
     if new_branch == true && hash.is_some() {
         if let Some(commit_hash) = hash {
@@ -21,10 +21,6 @@ pub fn checkout(new_branch: bool, branch: Option<String>, hash: Option<String>) 
     } else if hash.is_some() {
         if let Some(commit_hash) = hash {
             switch_commit(commit_hash)?;
-        }
-    } else if branch.is_some() {
-        if let Some(branch_name) = branch {
-            switch_branch(branch_name)?;
         }
     } else {
         println!("Missing Arguments!!!")
@@ -152,17 +148,5 @@ fn write_hash_to_current_branch(hash: &str) -> Result<()> {
 
     let location = format!(".lit/{}", branch_ref);
     std::fs::write(location, hash)?;
-    Ok(())
-}
-
-fn switch_branch(branch: String) -> Result<()> {
-    let branch_exists = does_branch_exists(&branch)?;
-    if !branch_exists {
-        println!("The given branch doesn't exists");
-    } else {
-        let branch = format!("ref: refs/heads/{}", branch);
-        let location = format!(".lit/HEAD");
-        fs::write(location, branch)?;
-    }
     Ok(())
 }

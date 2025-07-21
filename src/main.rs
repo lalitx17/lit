@@ -31,6 +31,9 @@ enum Commands {
         hash: Option<String>,
     },
     Branch,
+    Switch {
+        branch: String,
+    },
 }
 
 fn main() {
@@ -46,10 +49,33 @@ fn main() {
             commands::show::ShowResult::NotFound => println!("Object not found"),
         },
         Commands::Checkout {
-            hash,
-            branch,
             new_branch,
-        } => commands::checkout(new_branch, branch, hash).unwrap(),
+            branch,
+            hash,
+        } => {
+            if new_branch {
+                match branch {
+                    Some(branch_name) => commands::checkout(None, true, Some(branch_name)).unwrap(),
+                    None => {
+                        eprintln!("Error: --new-branch requires a branch name.");
+                        std::process::exit(1);
+                    }
+                }
+            } else {
+                match hash {
+                    Some(commit_hash) => {
+                        commands::checkout(Some(commit_hash), false, None).unwrap()
+                    }
+                    None => {
+                        eprintln!(
+                            "Error: checkout requires a commit hash unless --new-branch is used."
+                        );
+                        std::process::exit(1);
+                    }
+                }
+            }
+        }
         Commands::Branch => commands::branch_list().unwrap(),
+        Commands::Switch { branch } => commands::switch_branch(branch).unwrap(),
     }
 }
