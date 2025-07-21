@@ -42,7 +42,6 @@ pub fn switch_commit(hash: String) -> Result<()> {
             return Ok(());
         }
         ShowResult::Exists(content) => {
-            println!("hash exists");
             let tree_line = content.lines().find(|l| l.starts_with("tree "));
             let tree_hash = match tree_line {
                 Some(line) => line[5..].trim(),
